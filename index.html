@@ -74,10 +74,9 @@
   #reloadText{font-size:12px;letter-spacing:.12em;color:#ffe98e;font-weight:1000;min-height:15px;margin-top:6px}
   #scorePop{position:absolute;left:50%;top:22%;transform:translate(-50%,-50%);font-size:22px;font-weight:1000;color:#ffe67b;text-shadow:0 4px 16px rgba(0,0,0,.4);opacity:0;transition:opacity .12s,transform .3s}
   #scorePop.show{opacity:1;transform:translate(-50%,-65%)}
-  #crosshair{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%)}
-  #crosshair:before,#crosshair:after{content:"";position:absolute;background:rgba(255,255,255,.95);box-shadow:0 0 6px rgba(0,0,0,.55)}
-  #crosshair:before{width:2px;height:22px;left:10px;top:0}
-  #crosshair:after{height:2px;width:22px;left:0;top:10px}
+  #crosshair{position:absolute;left:50%;top:50%;width:18px;height:18px;transform:translate(-50%,-50%);border:2px solid rgba(255,248,225,.96);border-radius:50%;box-sizing:border-box;filter:drop-shadow(0 0 5px rgba(0,0,0,.65));}
+  #crosshair:before{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;transform:translate(-50%,-50%);border-radius:50%;background:#fff7e2;box-shadow:0 0 6px rgba(0,0,0,.7)}
+  #crosshair:after{display:none}
   #controls{position:absolute;left:18px;bottom:18px;max-width:360px;padding:11px 13px;border-radius:14px;background:rgba(4,18,37,.54);border:1px solid rgba(255,255,255,.1);font-size:12px;color:#e1eef8}
   #controls b{color:#fff}
   #toast{position:absolute;left:50%;bottom:18%;transform:translateX(-50%);padding:12px 18px;border-radius:999px;background:rgba(3,18,35,.76);border:1px solid rgba(255,255,255,.12);font-weight:900;opacity:0;transition:.18s;white-space:nowrap}
@@ -120,7 +119,7 @@
     .hud-panel{padding:8px 10px;border-radius:13px}.stat-line{font-size:11px}.bar{height:6px}
     #bossHud{top:calc(10px + var(--safe-top));min-width:min(52vw,500px)}
     #ammo{right:calc(18px + var(--safe-right));bottom:calc(122px + var(--safe-bottom));padding:7px 10px;border-radius:12px;background:rgba(4,18,37,.48);border:1px solid rgba(255,255,255,.10);text-align:center;min-width:76px}#ammoValue{font-size:clamp(23px,3.4vw,29px)}#reloadText{font-size:9px;margin-top:3px}
-    #crosshair{width:20px;height:20px}#crosshair:before{height:20px;left:9px}#crosshair:after{width:20px;top:9px}#toast{bottom:20%;font-size:12px}
+    #crosshair{width:20px;height:20px;aspect-ratio:1/1}#crosshair:before{width:4px;height:4px;left:50%;top:50%;transform:translate(-50%,-50%);aspect-ratio:1/1}#crosshair:after{display:none}#toast{bottom:20%;font-size:12px}
   }
 
 </style>
@@ -316,7 +315,7 @@
   const PLAYER_ACCELERATION = 9.5;
   const JUMP_VELOCITY = 0.66;
   const RELOAD_MS = 1800;
-  const NORMAL_ENEMY_COUNT = 9;
+  const NORMAL_ENEMY_COUNT = 10;
 
   let camera;
   let gunRoot;
@@ -378,9 +377,12 @@
     mats.grass = makeMat("grass", [0.16,0.60,0.23]);
     mats.grass2 = makeMat("grass2", [0.23,0.72,0.29]);
     mats.path = makeMat("path", [0.66,0.66,0.56]);
-    mats.concrete = makeMat("concrete", [0.82,0.84,0.86]);
-    mats.white = makeMat("white", [0.94,0.96,1]);
-    mats.blue = makeMat("blue", [0.10,0.33,0.72]);
+    // Pale yellow floor: intentionally lighter and less saturated than the Backrooms walls.
+    mats.concrete = makeMat("concrete", [0.88,0.82,0.60], { emissive:[0.22,0.19,0.11] });
+    mats.concrete.specularColor = new BABYLON.Color3(0.04,0.04,0.025);
+    mats.white = makeMat("warmBackroomsWall", [0.82,0.74,0.43], { emissive:[0.12,0.10,0.045] });
+    mats.white.specularColor = new BABYLON.Color3(0.06,0.06,0.04);
+    mats.blue = makeMat("outerWallWarm", [0.72,0.66,0.38], { emissive:[0.10,0.085,0.035] });
     mats.blue2 = makeMat("blue2", [0.16,0.56,0.92]);
     mats.yellow = makeMat("yellow", [0.98,0.80,0.16]);
     mats.red = makeMat("red", [0.86,0.15,0.18]);
@@ -782,10 +784,10 @@ function createSchoolCampus() {
     [-72,50],[-48,50],[-24,50],[0,50],[24,50],[48,50],[72,50]
   ];
   roomLightPositions.forEach(([x,z])=>{
-    const light=new BABYLON.PointLight("roomLight",new BABYLON.Vector3(x,5.7,z),scene);
-    light.intensity=5.0; light.range=52; light.diffuse=new BABYLON.Color3(1,1,.96);
-    const upper=new BABYLON.PointLight("upperRoomLight",new BABYLON.Vector3(x,9.2,z),scene);
-    upper.intensity=3.8; upper.range=50; upper.diffuse=new BABYLON.Color3(.96,.98,1);
+    const light=new BABYLON.PointLight("roomLight",new BABYLON.Vector3(x,45,z),scene);
+    light.intensity=2.0; light.range=90; light.diffuse=new BABYLON.Color3(1,1,.96);
+    const upper=new BABYLON.PointLight("upperRoomLight",new BABYLON.Vector3(x,45,z),scene);
+    upper.intensity=2.0; upper.range=10; upper.diffuse=new BABYLON.Color3(.96,.98,1);
   });
 }
 
@@ -858,8 +860,8 @@ function createSchoolCampus() {
     const stock=addBox("gun_stock", new BABYLON.Vector3(.42,.32,.78), new BABYLON.Vector3(-.08,-.01,-.30), mats.gunWood, {collisions:false,pickable:false}); stock.parent=gunRoot;
     const stockPad=addBox("gun_stock_pad", new BABYLON.Vector3(.48,.36,.12), new BABYLON.Vector3(-.08,-.01,-.68), mats.black, {collisions:false,pickable:false}); stockPad.parent=gunRoot;
     const body=addBox("gun_body", new BABYLON.Vector3(.48,.34,.92), new BABYLON.Vector3(.03,.05,.28), mats.gun, {collisions:false,pickable:false}); body.parent=gunRoot;
-    const upper=addBox("gun_upper", new BABYLON.Vector3(.40,.18,.82), new BABYLON.Vector3(.03,.27,.34), mats.gunAccent, {collisions:false,pickable:false}); upper.parent=gunRoot;
-    const rail=addBox("gun_rail", new BABYLON.Vector3(.22,.08,.95), new BABYLON.Vector3(.03,.39,.46), mats.black, {collisions:false,pickable:false}); rail.parent=gunRoot;
+    const upper=addBox("gun_upper", new BABYLON.Vector3(.32,.12,.68), new BABYLON.Vector3(.03,.22,.34), mats.gunAccent, {collisions:false,pickable:false}); upper.parent=gunRoot;
+    const rail=addBox("gun_rail", new BABYLON.Vector3(.16,.055,.76), new BABYLON.Vector3(.03,.31,.44), mats.black, {collisions:false,pickable:false}); rail.parent=gunRoot;
     const handguard=addBox("gun_handguard", new BABYLON.Vector3(.36,.30,.68), new BABYLON.Vector3(.03,.05,.98), mats.gunAccent, {collisions:false,pickable:false}); handguard.parent=gunRoot;
     const barrel=addCylinder("gun_barrel", .13, 1.72, new BABYLON.Vector3(.03,.06,1.56), mats.black, {collisions:false,pickable:false,tessellation:20}); barrel.rotation.x=Math.PI/2; barrel.parent=gunRoot;
     const muzzle=addCylinder("gun_muzzle", .21, .26, new BABYLON.Vector3(.03,.06,2.35), mats.gunAccent, {collisions:false,pickable:false,tessellation:16}); muzzle.rotation.x=Math.PI/2; muzzle.parent=gunRoot;
@@ -867,24 +869,28 @@ function createSchoolCampus() {
     const mag=addBox("gun_magazine", new BABYLON.Vector3(.34,.68,.38), new BABYLON.Vector3(.03,-.38,.62), mats.gun, {collisions:false,pickable:false}); mag.rotation.x=-.18; mag.parent=gunRoot;
     const magAccent=addBox("gun_mag_accent", new BABYLON.Vector3(.12,.72,.05), new BABYLON.Vector3(.03,-.39,.84), mats.gunWood, {collisions:false,pickable:false}); magAccent.rotation.x=-.18; magAccent.parent=gunRoot;
     const triggerGuard=addCylinder("gun_trigger_guard", .24, .42, new BABYLON.Vector3(.03,-.17,.18), mats.black, {collisions:false,pickable:false,tessellation:12}); triggerGuard.rotation.x=Math.PI/2; triggerGuard.parent=gunRoot;
-    const sightBack=addBox("gun_rear_sight", new BABYLON.Vector3(.10,.13,.08), new BABYLON.Vector3(.03,.42,.10), mats.black, {collisions:false,pickable:false}); sightBack.parent=gunRoot;
-    const sightFront=addBox("gun_front_sight", new BABYLON.Vector3(.08,.14,.07), new BABYLON.Vector3(.03,.38,1.70), mats.black, {collisions:false,pickable:false}); sightFront.parent=gunRoot;
+    const sightBack=addBox("gun_rear_sight", new BABYLON.Vector3(.065,.075,.06), new BABYLON.Vector3(.03,.285,.16), mats.black, {collisions:false,pickable:false}); sightBack.parent=gunRoot;
+    const sightFront=addBox("gun_front_sight", new BABYLON.Vector3(.055,.075,.055), new BABYLON.Vector3(.03,.235,1.52), mats.black, {collisions:false,pickable:false}); sightFront.parent=gunRoot;
     for(const x of [-.17,.17]){ const detail=addBox("gun_side_detail",new BABYLON.Vector3(.035,.12,.62),new BABYLON.Vector3(x,.08,.92),mats.gunWood,{collisions:false,pickable:false}); detail.parent=gunRoot; }
 
-    muzzleFlash = BABYLON.MeshBuilder.CreateSphere("muzzleFlash", {diameter:.30, segments:8}, scene);
-    muzzleFlash.parent=gunRoot; muzzleFlash.position.set(.03,.06,2.52);
+    muzzleFlash = BABYLON.MeshBuilder.CreateSphere("muzzleFlash", {diameter:.24, segments:10}, scene);
+    muzzleFlash.parent=gunRoot; muzzleFlash.position.set(.03,.06,2.46);
     muzzleFlash.material=makeMat("muzzle", [1,.78,.2], {emissive:[1,.38,.03]});
     muzzleFlash.isPickable=false; muzzleFlash.setEnabled(false);
+    const playerMuzzleLight = new BABYLON.PointLight("playerMuzzleLight", new BABYLON.Vector3(.03,.06,2.45), scene);
+    playerMuzzleLight.parent=gunRoot; playerMuzzleLight.intensity=0; playerMuzzleLight.range=9;
+    playerMuzzleLight.diffuse=new BABYLON.Color3(1,.55,.18);
+    gunRoot.metadata={...(gunRoot.metadata||{}), muzzleLight:playerMuzzleLight, muzzleMesh:muzzle};
   }
 
   function setupLighting() {
     const hemi = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0,1,0), scene);
-    hemi.intensity = 2.35;
+    hemi.intensity = 3.1;
     hemi.diffuse = new BABYLON.Color3(1,1,1);
     hemi.groundColor = new BABYLON.Color3(.35,.55,.3);
     const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-.55,-1,-.35), scene);
     sun.position = new BABYLON.Vector3(30,55,20);
-    sun.intensity = 2.35;
+    sun.intensity = 3.0;
     const shadow = new BABYLON.ShadowGenerator(1024, sun);
     shadow.useBlurExponentialShadowMap=true;
     shadow.blurKernel=24;
@@ -905,14 +911,57 @@ function createSchoolCampus() {
     new BABYLON.Vector3(0, 1, 0),
     scene
   );
-  visibilityLight.intensity = 10.5;
+  visibilityLight.intensity = 4.2;
   visibilityLight.diffuse = new BABYLON.Color3(1, 1, 1);
   visibilityLight.groundColor = new BABYLON.Color3(0.92, 0.94, 0.96);
   // Bright, even fill light prevents hard dark rings and wall-like edges around room lights.
   const worldFillLight = new BABYLON.HemisphericLight("worldFillLight", new BABYLON.Vector3(0, 1, 0), scene);
-  worldFillLight.intensity = 2.8;
+  worldFillLight.intensity = 2.75;
   worldFillLight.diffuse = new BABYLON.Color3(1, 0.98, 0.94);
   worldFillLight.groundColor = new BABYLON.Color3(0.96, 0.97, 1.0);
+
+  // CENTRAL OPEN LIGHT: the middle stays physically open, with a real moderate point light
+  // plus a visible glowing fixture. It is stronger than the last broken version, but below
+  // the earlier over-bright version.
+  const centralLight = new BABYLON.PointLight("centralOpenLight", new BABYLON.Vector3(0, 10.2, 0), scene);
+  // Raised above the room partitions so the true map-center light spreads evenly in every direction without overexposure.
+  centralLight.intensity = 1.65;
+  centralLight.range = 190;
+  centralLight.diffuse = new BABYLON.Color3(1.0, 0.90, 0.62);
+  centralLight.specular = new BABYLON.Color3(1.0, 0.94, 0.76);
+
+  // A second softer fill from the same open center prevents the light from looking like
+  // only a glowing dot while leaving the source itself comfortably visible.
+  const centralFill = new BABYLON.PointLight("centralOpenFill", new BABYLON.Vector3(0, 8.8, 0), scene);
+  centralFill.intensity = 0.85;
+  centralFill.range = 175;
+  centralFill.diffuse = new BABYLON.Color3(1.0, 0.94, 0.78);
+
+  const centralFixture = BABYLON.MeshBuilder.CreateSphere("centralOpenLamp", {diameter:1.28, segments:20}, scene);
+  centralFixture.position.set(0, 7.4, 0);
+  centralFixture.material = makeMat("centralOpenLampMat", [1.0,.88,.36], {emissive:[1.0,.72,.16]});
+  centralFixture.isPickable=false;
+
+  // Symmetric support around the exact center: broad coverage in every direction without a harsh hotspot.
+  [[-42,0],[42,0],[0,-38],[0,38]].forEach(([x,z],i)=>{
+    const fill = new BABYLON.PointLight("centralWideFill_"+i, new BABYLON.Vector3(x,9.0,z), scene);
+    fill.intensity = 0.72;
+    fill.range = 105;
+    fill.diffuse = new BABYLON.Color3(1.0,0.93,0.72);
+  });
+
+  // Several moderate local lights keep the map bright without one oversized source.
+  [[-70,-35],[-45,0],[-20,35],[20,-35],[45,0],[70,35],[-35,50],[35,-50]].forEach(([x,z],i)=>{
+    const fill = new BABYLON.PointLight("distributedFill_"+i, new BABYLON.Vector3(x,6.8,z), scene);
+    fill.intensity = 2.5; fill.range = 26;
+    fill.diffuse = new BABYLON.Color3(1.0,0.96,0.82);
+  });
+
+  // Ensure the many room lights and the central source can all contribute instead of
+  // being silently limited to a tiny number of simultaneous lights on wall materials.
+  scene.materials.forEach(mat=>{
+    if(mat && "maxSimultaneousLights" in mat) mat.maxSimultaneousLights = 12;
+  });
 
   createCamera();
   camera.position.set(0, 2.0, 20);
@@ -1199,7 +1248,9 @@ function enemyVisualShot(enemy, start, targetPosition){
     flash.position.copyFrom(start); flash.material=makeMat("enemyShotMat",[1,.18,.04],{emissive:[1,.05,.01]}); flash.isPickable=false;
     const tracer=BABYLON.MeshBuilder.CreateLines("enemyTracer",{points:[start,start.add(dir.scale(dist))],updatable:false},scene);
     tracer.color=new BABYLON.Color3(1,.24,.08); tracer.isPickable=false;
-    setTimeout(()=>{flash.dispose();tracer.dispose();},70);
+    const shotLight=new BABYLON.PointLight("enemyMuzzleLight",start.clone(),scene);
+    shotLight.intensity=6.5; shotLight.range=9; shotLight.diffuse=new BABYLON.Color3(1,.28,.06);
+    setTimeout(()=>{flash.dispose();tracer.dispose();shotLight.dispose();},85);
   }catch(e){}
 }
 
@@ -1504,11 +1555,33 @@ function updateOneEnemy(enemy,dt){
     ammo--;
     gunRecoil=.9;
     muzzleFlash.setEnabled(true);
-    setTimeout(()=>{ if(muzzleFlash) muzzleFlash.setEnabled(false); },45);
+    const pml=gunRoot?.metadata?.muzzleLight; if(pml) pml.intensity=9.5;
+    setTimeout(()=>{ if(muzzleFlash) muzzleFlash.setEnabled(false); if(pml) pml.intensity=0; },85);
     playTone(125,.09);
 
     const ray=camera.getForwardRay(120);
-    const pick=scene.pickWithRay(ray, mesh=>!!(mesh && mesh.isPickable && mesh.metadata && mesh.metadata.enemy));
+    // Pick the first real thing hit by the shot, including walls, props and enemies.
+    const pick=scene.pickWithRay(ray, mesh=>!!(mesh && mesh.isPickable && mesh.isEnabled()));
+    const tracerEnd=(pick&&pick.hit&&pick.pickedPoint)?pick.pickedPoint:ray.origin.add(ray.direction.scale(120));
+
+    // Start the visible bullet trail at the actual end of the weapon barrel, not the camera.
+    const muzzleMesh=gunRoot?.metadata?.muzzleMesh;
+    let tracerStart=ray.origin.add(ray.direction.scale(.65));
+    if(muzzleMesh){
+      muzzleMesh.computeWorldMatrix(true);
+      tracerStart=muzzleMesh.getAbsolutePosition().clone();
+      // Move a little forward from the muzzle so the line clearly exits the barrel opening.
+      tracerStart.addInPlace(ray.direction.scale(.18));
+    }
+    const playerTracer=BABYLON.MeshBuilder.CreateTube("playerLaserTracer",{
+      path:[tracerStart,tracerEnd], radius:.035, tessellation:8, cap:BABYLON.Mesh.CAP_ALL
+    },scene);
+    const tracerMat=makeMat("playerLaserTracerMat", [1,.015,.01], {emissive:[1,.005,.003]});
+    tracerMat.alpha=.95;
+    playerTracer.material=tracerMat; playerTracer.isPickable=false;
+    const tracerLight=new BABYLON.PointLight("playerTracerGlow", tracerStart.clone(), scene);
+    tracerLight.diffuse=new BABYLON.Color3(1,.04,.02); tracerLight.intensity=3.5; tracerLight.range=5;
+    setTimeout(()=>{playerTracer.dispose();tracerMat.dispose();tracerLight.dispose();},105);
     if(pick && pick.hit && pick.pickedMesh && pick.pickedMesh.metadata){
       const target=pick.pickedMesh.metadata.enemy;
       if(target && !target.dead){
